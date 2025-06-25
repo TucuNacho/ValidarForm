@@ -1,55 +1,100 @@
 import { Form, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState } from "react";
-
+import { useForm } from "react-hook-form";
 const FormValido = () => {
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [DNI, setDNI] = useState("");
-  const [mail, setMail] = useState("");
+  const FormLocalStorage = JSON.parse(localStorage.getItem("Formulario")) || [];
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      nombre: FormLocalStorage.nombre || "",
+      apellido: FormLocalStorage.apellido || "",
+      DNI: FormLocalStorage.DNI || "",
+      mail: FormLocalStorage.mail || "",
+    },
+  });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const agregarDatos = (data) => {
+    localStorage.setItem("Formulario", JSON.stringify(data));
+    reset();
   };
   return (
     <>
       <section className="container bg-info-subtle rounded mt-3 py-3">
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit(agregarDatos)}>
           <Form.Group className="mb-3" controlId="nombre">
             <Form.Label>Nombre</Form.Label>
             <Form.Control
               type="text"
               placeholder="Juanito"
-              onChange={(e) => setNombre(e.target.value)}
-              value={nombre}
+              {...register("nombre", {
+                required: "El nombre es obligatorio",
+                minLength: {
+                  value: 3,
+                  message: "El nombre debe contener 3 caracteres como minimo",
+                },
+                maxLength: {
+                  value: 20,
+                  message: "El nombre debe contener 20 caracteres como maximo",
+                },
+              })}
             />
+               <Form.Text className="text-danger">{errors.nombre?.message}</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="apellido">
             <Form.Label>Apellido</Form.Label>
             <Form.Control
               type="text"
               placeholder="Perez"
-              onChange={(e) => setApellido(e.target.value)}
-              value={apellido}
+              {...register("apellido", {
+                required: "El apellido es obligatorio",
+                minLength: {
+                  value: 3,
+                  message: "El apellido debe contener 3 caracteres como minimo",
+                },
+                maxLength: {
+                  value: 20,
+                  message:
+                    "El apellido debe contener 20 caracteres como maximo",
+                },
+              })}
             />
+             <Form.Text className="text-danger">{errors.apellido?.message}</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="DNI">
             <Form.Label>DNI</Form.Label>
             <Form.Control
               type="text"
               placeholder="12.345.678"
-              onChange={(e) => setDNI(e.target.value)}
-              value={DNI}
+              {...register("DNI", {
+                required: "El DNI es un dato obligatorio",
+                pattern: {
+                  value: /^\d{8}$/,
+                  message: "Debe tener exactamente 8 números",
+                },
+              })}
             />
+             <Form.Text className="text-danger">{errors.DNI?.message}</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="mail">
             <Form.Label>Email</Form.Label>
             <Form.Control
-              type="text"
+              type="email"
               placeholder="JuanitoPerez@gmail.com"
-              onChange={(e) => setMail(e.target.value)}
-              value={mail}
+              {...register("mail", {
+                required: "El correo es obligatorio",
+                pattern: {
+                  value: /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/,
+                  message: "Debe ser un email válido",
+                },
+              })}
             />
+            <Form.Text className="text-danger">
+              {errors.mail?.message}
+            </Form.Text>
           </Form.Group>
 
           <Button type="submit">Enviar</Button>
